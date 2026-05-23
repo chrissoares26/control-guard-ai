@@ -1,5 +1,5 @@
 <template>
-  <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', colorClass]">
+  <span :class="['text-xs font-semibold px-2.5 py-1 rounded-md inline-flex items-center', colorClass]">
     {{ risk.charAt(0).toUpperCase() + risk.slice(1) }}
   </span>
 </template>
@@ -10,9 +10,9 @@ import { computed } from 'vue'
 const props = defineProps<{ risk: 'critical' | 'high' | 'medium' | 'low' }>()
 
 const colorClass = computed(() => ({
-  critical: 'bg-red-100 text-red-800',
-  high: 'bg-orange-100 text-orange-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  low: 'bg-green-100 text-green-800',
+  critical: 'bg-red-50 text-red-700 ring-1 ring-red-200/60',
+  high: 'bg-orange-50 text-orange-700 ring-1 ring-orange-200/60',
+  medium: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200/60',
+  low: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200/60',
 }[props.risk]))
 </script>

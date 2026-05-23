@@ -15,7 +15,7 @@ export interface SanitisationResult {
 export class SanitisationService {
   private readonly patterns = {
     email: /[\w.\-]+@[\w.\-]+\.\w+/g,
-    phone: /(\+\d{1,3}[\s\-.]?)?\(?\d{1,4}\)?[\s\-.]?\d{1,4}[\s\-.]?\d{1,9}/g,
+    phone: /(\+\d{1,3}[\s\-.]?)?\(?\d{2,4}\)?[\s\-.]?\d{2,4}[\s\-.]?\d{2,9}/g,
     iban: /\b[A-Z]{2}\d{2}[\sA-Z0-9]{11,30}\b/g,
     account: /\b\d{8,12}\b/g,
   };

@@ -1,80 +1,108 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="mb-6">
-        <button
-          @click="router.push('/sessions')"
-          class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-        >
-          <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Sessions
-        </button>
-      </div>
+  <div class="min-h-full bg-surface px-8 py-8">
+    <div class="max-w-2xl mx-auto">
 
-      <div class="bg-white shadow rounded-lg p-8">
-        <h1 class="text-xl font-bold text-gray-900 mb-6">Create New Review Session</h1>
+      <!-- Breadcrumb -->
+      <button
+        @click="router.push('/sessions')"
+        class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-brand transition-colors mb-5"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Sessions
+      </button>
 
-        <form @submit.prevent="handleSubmit" class="space-y-5">
+      <!-- Page title -->
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight mb-7">New Review Session</h1>
+
+      <!-- Form card -->
+      <div class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card p-8">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+
+          <!-- Session Name -->
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">Session Name</label>
+            <label for="name" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Session Name
+            </label>
             <input
               id="name"
               v-model="form.name"
               type="text"
               required
               placeholder="e.g. Q2 2026 AP Process Review"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              class="block w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
             />
           </div>
 
+          <!-- Process Name -->
           <div>
-            <label for="processName" class="block text-sm font-medium text-gray-700">Process Name</label>
+            <label for="processName" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Process Name
+            </label>
             <input
               id="processName"
               v-model="form.processName"
               type="text"
               required
               placeholder="e.g. Accounts Payable"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              class="block w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
             />
           </div>
 
+          <!-- Process Owner -->
           <div>
-            <label for="processOwner" class="block text-sm font-medium text-gray-700">Process Owner</label>
+            <label for="processOwner" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Process Owner
+            </label>
             <input
               id="processOwner"
               v-model="form.processOwner"
               type="text"
               required
               placeholder="e.g. Jane Smith"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              class="block w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
             />
           </div>
 
-          <div v-if="sessionsStore.error" class="text-red-600 text-sm">
-            {{ sessionsStore.error }}
+          <!-- Error state -->
+          <div
+            v-if="sessionsStore.error"
+            class="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 px-4 py-3"
+          >
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p class="text-sm text-red-700">{{ sessionsStore.error }}</p>
           </div>
 
-          <div class="flex items-center justify-end space-x-3 pt-2">
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               @click="router.push('/sessions')"
-              class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+              class="border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               :disabled="sessionsStore.loading"
-              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              class="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ sessionsStore.loading ? 'Creating...' : 'Create Session' }}
+              <svg v-if="sessionsStore.loading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.25"/>
+                <path d="M21 12a9 9 0 00-9-9" />
+              </svg>
+              {{ sessionsStore.loading ? 'Creating…' : 'Create Session' }}
             </button>
           </div>
+
         </form>
       </div>
+
     </div>
   </div>
 </template>

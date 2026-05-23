@@ -1,156 +1,276 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Nav -->
-    <nav class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button @click="router.push('/sessions')" class="text-sm text-indigo-600 hover:underline">
-          ← Sessions
-        </button>
-        <span class="text-gray-300">/</span>
-        <span class="text-sm font-medium text-gray-900 truncate max-w-xs">
-          {{ sessionsStore.currentSession?.name ?? 'Loading…' }}
-        </span>
-      </div>
-      <SessionStatusBadge v-if="sessionsStore.currentSession" :status="sessionsStore.currentSession.status" />
-    </nav>
+  <div class="min-h-full bg-surface px-8 py-8">
+    <div class="max-w-3xl mx-auto">
 
-    <div class="max-w-3xl mx-auto px-6 py-8">
+      <!-- Breadcrumb -->
+      <button
+        @click="router.push('/sessions')"
+        class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-brand transition-colors mb-5"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Sessions
+      </button>
+
       <!-- Loading -->
-      <div v-if="sessionsStore.loading && !sessionsStore.currentSession" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+      <div v-if="sessionsStore.loading && !sessionsStore.currentSession" class="flex items-center justify-center py-24">
+        <div class="w-8 h-8 border-2 border-slate-200 border-t-brand rounded-full animate-spin" />
       </div>
 
       <template v-else-if="sessionsStore.currentSession">
-        <!-- Session metadata -->
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h1 class="text-xl font-bold text-gray-900 mb-1">{{ sessionsStore.currentSession.name }}</h1>
-          <p class="text-sm text-gray-500 mb-4">
-            Process: <span class="font-medium text-gray-700">{{ sessionsStore.currentSession.processName }}</span>
-            · Owner: <span class="font-medium text-gray-700">{{ sessionsStore.currentSession.processOwner }}</span>
-            · Created {{ formatDate(sessionsStore.currentSession.createdAt) }}
-          </p>
 
-          <!-- Finding summary for analysed+ sessions -->
-          <div v-if="sessionsStore.currentSession.findingSummary" class="grid grid-cols-4 gap-3 text-center">
-            <div class="rounded-md bg-gray-50 p-3">
-              <p class="text-lg font-bold text-gray-900">{{ sessionsStore.currentSession.findingSummary.total }}</p>
-              <p class="text-xs text-gray-500">Total</p>
-            </div>
-            <div class="rounded-md bg-yellow-50 p-3">
-              <p class="text-lg font-bold text-yellow-700">{{ sessionsStore.currentSession.findingSummary.pending }}</p>
-              <p class="text-xs text-gray-500">Pending</p>
-            </div>
-            <div class="rounded-md bg-green-50 p-3">
-              <p class="text-lg font-bold text-green-700">
-                {{ sessionsStore.currentSession.findingSummary.accepted + sessionsStore.currentSession.findingSummary.edited }}
-              </p>
-              <p class="text-xs text-gray-500">Accepted</p>
-            </div>
-            <div class="rounded-md bg-red-50 p-3">
-              <p class="text-lg font-bold text-red-700">{{ sessionsStore.currentSession.findingSummary.dismissed }}</p>
-              <p class="text-xs text-gray-500">Dismissed</p>
-            </div>
+        <!-- Page header: title + status badge -->
+        <div class="mb-7">
+          <div class="flex items-start gap-3 mb-2">
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight leading-tight">
+              {{ sessionsStore.currentSession.name }}
+            </h1>
+            <SessionStatusBadge
+              :status="sessionsStore.currentSession.status"
+              class="mt-1 flex-shrink-0"
+            />
+          </div>
+          <!-- Metadata row -->
+          <p class="text-sm text-slate-500">
+            <span class="font-medium text-slate-700">{{ sessionsStore.currentSession.processName }}</span>
+            <span class="mx-1.5 text-slate-300">·</span>
+            Owner: <span class="font-medium text-slate-700">{{ sessionsStore.currentSession.processOwner }}</span>
+            <span class="mx-1.5 text-slate-300">·</span>
+            Created {{ formatDate(sessionsStore.currentSession.createdAt) }}
+          </p>
+        </div>
+
+        <!-- Finding summary stats (analysed+ sessions) -->
+        <div
+          v-if="sessionsStore.currentSession.findingSummary"
+          class="grid grid-cols-4 gap-3 mb-6"
+        >
+          <div class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card p-4 text-center">
+            <p class="text-2xl font-bold text-slate-900 leading-none mb-1">
+              {{ sessionsStore.currentSession.findingSummary.total }}
+            </p>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total</p>
+          </div>
+          <div class="bg-white rounded-xl ring-1 ring-amber-200/60 shadow-card p-4 text-center">
+            <p class="text-2xl font-bold text-amber-600 leading-none mb-1">
+              {{ sessionsStore.currentSession.findingSummary.pending }}
+            </p>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Pending</p>
+          </div>
+          <div class="bg-white rounded-xl ring-1 ring-emerald-200/60 shadow-card p-4 text-center">
+            <p class="text-2xl font-bold text-emerald-600 leading-none mb-1">
+              {{ sessionsStore.currentSession.findingSummary.accepted + sessionsStore.currentSession.findingSummary.edited }}
+            </p>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Accepted</p>
+          </div>
+          <div class="bg-white rounded-xl ring-1 ring-red-200/60 shadow-card p-4 text-center">
+            <p class="text-2xl font-bold text-red-500 leading-none mb-1">
+              {{ sessionsStore.currentSession.findingSummary.dismissed }}
+            </p>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Dismissed</p>
           </div>
         </div>
 
         <!-- DRAFT: document upload -->
-        <div v-if="sessionsStore.currentSession.status === 'DRAFT'" class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h2 class="text-base font-semibold text-gray-900 mb-3">Upload Process Document</h2>
+        <div
+          v-if="sessionsStore.currentSession.status === 'DRAFT'"
+          class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card p-6 mb-5"
+        >
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">Upload Process Document</h2>
 
+          <!-- Drop zone (no document yet) -->
           <div v-if="!sessionsStore.currentSession.document">
             <div
-              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-400 transition-colors"
+              class="border-2 border-dashed border-slate-200 hover:border-brand/40 rounded-xl p-10 text-center cursor-pointer transition-colors group"
               @dragover.prevent
               @drop.prevent="handleDrop"
               @click="fileInput?.click()"
             >
-              <p class="text-sm text-gray-600">Drag &amp; drop a PDF or DOCX here, or <span class="text-indigo-600 font-medium">browse</span></p>
-              <p class="text-xs text-gray-400 mt-1">Maximum 10 MB</p>
+              <!-- Upload cloud icon -->
+              <div class="flex justify-center mb-3">
+                <div class="w-12 h-12 rounded-full bg-slate-50 ring-1 ring-slate-200 flex items-center justify-center group-hover:bg-brand/5 group-hover:ring-brand/20 transition-colors">
+                  <svg class="w-5 h-5 text-slate-400 group-hover:text-brand transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 16 12 12 8 16" />
+                    <line x1="12" y1="12" x2="12" y2="21" />
+                    <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+                  </svg>
+                </div>
+              </div>
+              <p class="text-sm font-medium text-slate-700 mb-1">
+                Drag &amp; drop a file here, or
+                <span class="text-brand font-semibold">browse</span>
+              </p>
+              <p class="text-xs text-slate-400">PDF or DOCX — maximum 10 MB</p>
             </div>
-            <input ref="fileInput" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" @change="handleFileSelect" />
-            <p v-if="uploadError" class="text-red-600 text-sm mt-2">{{ uploadError }}</p>
-            <div v-if="uploading" class="flex items-center gap-2 mt-3 text-sm text-gray-600">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600" />
+
+            <input
+              ref="fileInput"
+              type="file"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              class="hidden"
+              @change="handleFileSelect"
+            />
+
+            <!-- Upload error -->
+            <div
+              v-if="uploadError"
+              class="flex items-start gap-2.5 mt-3 rounded-lg bg-red-50 border border-red-200 px-3.5 py-2.5"
+            >
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <p class="text-sm text-red-700">{{ uploadError }}</p>
+            </div>
+
+            <!-- Uploading progress -->
+            <div v-if="uploading" class="flex items-center gap-2.5 mt-3 text-sm text-slate-600">
+              <div class="w-4 h-4 border-2 border-slate-200 border-t-brand rounded-full animate-spin flex-shrink-0" />
               Uploading…
             </div>
           </div>
 
-          <div v-else class="flex items-center gap-3 p-3 bg-green-50 rounded-md">
-            <span class="text-green-600 text-lg">✓</span>
-            <div>
-              <p class="text-sm font-medium text-gray-900">{{ sessionsStore.currentSession.document.filename }}</p>
-              <p class="text-xs text-gray-500">{{ formatFileSize(sessionsStore.currentSession.document.fileSize) }} · {{ sessionsStore.currentSession.document.wordCount.toLocaleString() }} words</p>
+          <!-- Document uploaded -->
+          <div v-else class="flex items-center gap-4 p-4 bg-emerald-50 rounded-xl ring-1 ring-emerald-200/60">
+            <!-- SVG checkmark in green circle -->
+            <div class="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4.5 h-4.5 text-white" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900 truncate">
+                {{ sessionsStore.currentSession.document.filename }}
+              </p>
+              <p class="text-xs text-slate-500 mt-0.5">
+                {{ formatFileSize(sessionsStore.currentSession.document.fileSize) }}
+                <span class="mx-1 text-slate-300">·</span>
+                {{ sessionsStore.currentSession.document.wordCount.toLocaleString() }} words
+              </p>
             </div>
           </div>
         </div>
 
         <!-- Run analysis button (DRAFT + document exists) -->
-        <div v-if="sessionsStore.currentSession.status === 'DRAFT' && sessionsStore.currentSession.document" class="mb-6">
+        <div
+          v-if="sessionsStore.currentSession.status === 'DRAFT' && sessionsStore.currentSession.document"
+          class="mb-5"
+        >
           <button
             :disabled="analysing"
             @click="handleRunAnalysis"
-            class="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-brand hover:bg-brand-dark text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <div v-if="analysing" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+            <div v-if="analysing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
             {{ analysing ? 'Running AI Analysis…' : 'Run AI Analysis' }}
           </button>
           <p v-if="analysisError" class="text-red-600 text-sm mt-2 text-center">{{ analysisError }}</p>
         </div>
 
         <!-- ANALYSED / IN_REVIEW: go to review -->
-        <div v-if="sessionsStore.currentSession.status === 'ANALYSED' || sessionsStore.currentSession.status === 'IN_REVIEW'" class="mb-6">
+        <div
+          v-if="sessionsStore.currentSession.status === 'ANALYSED' || sessionsStore.currentSession.status === 'IN_REVIEW'"
+          class="mb-5"
+        >
           <button
             @click="router.push(`/sessions/${sessionsStore.currentSession!.id}/review`)"
-            class="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700"
+            class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-brand hover:bg-brand-dark text-white rounded-xl text-sm font-semibold transition-colors"
           >
-            Review Findings →
+            Review Findings
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
           </button>
         </div>
 
         <!-- FINALISED: download report + audit trail -->
         <template v-if="sessionsStore.currentSession.status === 'FINALISED'">
-          <div class="mb-6">
+          <div class="mb-5">
             <button
               :disabled="downloadingReport"
               @click="handleDownloadReport"
-              class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              class="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div v-if="downloadingReport" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              <div v-if="downloadingReport" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
               {{ downloadingReport ? 'Generating Report…' : 'Download PDF Report' }}
             </button>
           </div>
 
-          <!-- Audit trail -->
-          <div class="bg-white rounded-lg border border-gray-200">
+          <!-- Audit trail (collapsible) -->
+          <div class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card overflow-hidden">
             <button
               @click="showAuditTrail = !showAuditTrail"
-              class="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-gray-900 hover:bg-gray-50"
+              class="w-full flex items-center justify-between px-6 py-4 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition-colors"
             >
-              <span>Audit Trail</span>
-              <span>{{ showAuditTrail ? '▲' : '▼' }}</span>
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 12h6M9 16h6M9 8h6M5 3h14a2 2 0 012 2v16a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                </svg>
+                Audit Trail
+              </span>
+              <svg
+                class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                :class="showAuditTrail ? 'rotate-180' : ''"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              >
+                <path d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
-            <div v-if="showAuditTrail" class="border-t border-gray-200">
-              <div v-if="loadingAudit" class="flex items-center justify-center py-6">
-                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600" />
+
+            <div v-if="showAuditTrail" class="border-t border-slate-100">
+              <!-- Loading -->
+              <div v-if="loadingAudit" class="flex items-center justify-center py-8">
+                <div class="w-5 h-5 border-2 border-slate-200 border-t-brand rounded-full animate-spin" />
               </div>
-              <div v-else-if="auditEntries.length === 0" class="px-6 py-4 text-sm text-gray-500">No audit entries found.</div>
+              <!-- Empty -->
+              <div v-else-if="auditEntries.length === 0" class="px-6 py-6 text-sm text-slate-400 text-center">
+                No audit entries found.
+              </div>
+              <!-- Table -->
               <div v-else class="overflow-x-auto">
                 <table class="w-full text-xs">
-                  <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th class="px-4 py-2 text-left font-medium text-gray-500">Timestamp</th>
-                      <th class="px-4 py-2 text-left font-medium text-gray-500">Event</th>
-                      <th class="px-4 py-2 text-left font-medium text-gray-500">Actor</th>
-                      <th class="px-4 py-2 text-left font-medium text-gray-500">Outcome</th>
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                      <th class="px-5 py-3 text-left font-semibold text-slate-500 uppercase tracking-wide">Timestamp</th>
+                      <th class="px-5 py-3 text-left font-semibold text-slate-500 uppercase tracking-wide">Event</th>
+                      <th class="px-5 py-3 text-left font-semibold text-slate-500 uppercase tracking-wide">Actor</th>
+                      <th class="px-5 py-3 text-left font-semibold text-slate-500 uppercase tracking-wide">Outcome</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-100">
-                    <tr v-for="entry in auditEntries" :key="entry.id" class="hover:bg-gray-50">
-                      <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ formatDateTime(entry.eventTimestamp) }}</td>
-                      <td class="px-4 py-2 text-gray-700">{{ entry.eventType.replace(/_/g, ' ') }}</td>
-                      <td class="px-4 py-2 text-gray-700">{{ entry.actor }}</td>
-                      <td class="px-4 py-2">
-                        <span :class="entry.outcome === 'success' ? 'text-green-700' : 'text-red-700'">{{ entry.outcome }}</span>
+                  <tbody class="divide-y divide-slate-50">
+                    <tr v-for="entry in auditEntries" :key="entry.id" class="hover:bg-slate-50/70 transition-colors">
+                      <td class="px-5 py-3 text-slate-400 whitespace-nowrap font-mono">
+                        {{ formatDateTime(entry.eventTimestamp) }}
+                      </td>
+                      <td class="px-5 py-3 text-slate-700 font-medium">
+                        {{ entry.eventType.replace(/_/g, ' ') }}
+                      </td>
+                      <td class="px-5 py-3 text-slate-600">{{ entry.actor }}</td>
+                      <td class="px-5 py-3">
+                        <span
+                          :class="entry.outcome === 'success'
+                            ? 'inline-flex items-center gap-1 text-emerald-700 font-medium'
+                            : 'inline-flex items-center gap-1 text-red-600 font-medium'"
+                        >
+                          <svg v-if="entry.outcome === 'success'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                          {{ entry.outcome }}
+                        </span>
                       </td>
                     </tr>
                   </tbody>
@@ -159,11 +279,19 @@
             </div>
           </div>
         </template>
+
       </template>
 
-      <div v-else-if="!sessionsStore.loading" class="text-center py-20 text-gray-500">
-        Session not found.
+      <!-- Not found -->
+      <div v-else-if="!sessionsStore.loading" class="flex flex-col items-center justify-center py-24 text-slate-400">
+        <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p class="text-sm font-medium">Session not found.</p>
       </div>
+
     </div>
   </div>
 </template>

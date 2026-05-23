@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint:script *)",
+      "Bash(npm run lint:script)",
+      "Bash(npx vitest run *)",
+      "Bash(npx vitest run)",
+      "Bash(pnpm test:unit *)",
+      "Bash(pnpm test:unit)",
+      "Bash(pnpm type-check *)",
+      "Bash(pnpm type-check)",
+      "Bash(pnpm --filter * test *)"
+    ]
+  }
+}
