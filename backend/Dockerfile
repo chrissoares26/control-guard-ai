@@ -12,8 +12,8 @@ RUN npx prisma generate
 
 COPY tsconfig*.json nest-cli.json ./
 COPY src ./src
-RUN npm run build
+RUN npm run build && ls -la /app/dist/ && test -f /app/dist/main.js
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]
