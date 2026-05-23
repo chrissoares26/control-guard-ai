@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-full">
     <!-- Page header -->
-    <div class="px-8 pt-8 pb-6">
-      <div class="flex items-start justify-between">
+    <div class="px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 class="text-xl font-bold text-slate-900">Review Sessions</h1>
           <p class="mt-1 text-sm text-slate-500">Manage and track your internal controls evaluation sessions</p>
@@ -20,14 +20,14 @@
       </div>
     </div>
 
-    <div class="px-8">
+    <div class="px-4 sm:px-6 lg:px-8">
       <!-- Filter tabs -->
-      <div class="flex items-center gap-1 mb-6 border-b border-slate-200">
+      <div class="flex items-center gap-1 mb-6 border-b border-slate-200 overflow-x-auto">
         <button
           v-for="tab in tabs"
           :key="tab.value"
           @click="activeFilter = tab.value"
-          class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer whitespace-nowrap"
           :class="activeFilter === tab.value
             ? 'border-brand text-brand'
             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
@@ -74,51 +74,75 @@
         </button>
       </div>
 
-      <!-- Sessions table -->
-      <div v-else class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card overflow-hidden">
-        <table class="min-w-full">
-          <thead>
-            <tr class="border-b border-slate-100">
-              <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Session</th>
-              <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Process</th>
-              <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Findings</th>
-              <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Pending</th>
-              <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Created</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-50">
-            <tr
-              v-for="session in filteredSessions"
-              :key="session.id"
-              @click="router.push(`/sessions/${session.id}`)"
-              class="hover:bg-slate-50/70 cursor-pointer transition-colors duration-100 group"
-            >
-              <td class="px-6 py-4">
-                <span class="text-sm font-semibold text-slate-900 group-hover:text-brand transition-colors">{{ session.name }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <span class="text-sm text-slate-600">{{ session.processName }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <SessionStatusBadge :status="session.status" />
-              </td>
-              <td class="px-6 py-4">
-                <span class="text-sm font-medium text-slate-700">{{ session.findingCount ?? '—' }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <span v-if="session.pendingCount > 0" class="inline-flex items-center gap-1 text-sm font-semibold text-amber-700">
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
-                  {{ session.pendingCount }}
-                </span>
-                <span v-else class="text-sm text-slate-400">—</span>
-              </td>
-              <td class="px-6 py-4">
-                <span class="text-sm text-slate-500">{{ formatDate(session.createdAt) }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Sessions list / table -->
+      <div v-else>
+        <!-- Mobile card list (sm and below) -->
+        <div class="sm:hidden space-y-2.5">
+          <div
+            v-for="session in filteredSessions"
+            :key="session.id"
+            @click="router.push(`/sessions/${session.id}`)"
+            class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card px-4 py-4 cursor-pointer active:bg-slate-50 transition-colors"
+          >
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <span class="text-sm font-semibold text-slate-900 leading-tight">{{ session.name }}</span>
+              <SessionStatusBadge :status="session.status" />
+            </div>
+            <p class="text-sm text-slate-500 mb-3">{{ session.processName }}</p>
+            <div class="flex items-center gap-4 text-xs text-slate-400">
+              <span>{{ session.findingCount ?? 0 }} findings</span>
+              <span v-if="session.pendingCount > 0" class="text-amber-600 font-semibold">{{ session.pendingCount }} pending</span>
+              <span class="ml-auto">{{ formatDate(session.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop table (sm and above) -->
+        <div class="hidden sm:block bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card overflow-hidden">
+          <table class="min-w-full">
+            <thead>
+              <tr class="border-b border-slate-100">
+                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Session</th>
+                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Process</th>
+                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Findings</th>
+                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Pending</th>
+                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Created</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              <tr
+                v-for="session in filteredSessions"
+                :key="session.id"
+                @click="router.push(`/sessions/${session.id}`)"
+                class="hover:bg-slate-50/70 cursor-pointer transition-colors duration-100 group"
+              >
+                <td class="px-6 py-4">
+                  <span class="text-sm font-semibold text-slate-900 group-hover:text-brand transition-colors">{{ session.name }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-sm text-slate-600">{{ session.processName }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <SessionStatusBadge :status="session.status" />
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-sm font-medium text-slate-700">{{ session.findingCount ?? '—' }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span v-if="session.pendingCount > 0" class="inline-flex items-center gap-1 text-sm font-semibold text-amber-700">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+                    {{ session.pendingCount }}
+                  </span>
+                  <span v-else class="text-sm text-slate-400">—</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-sm text-slate-500">{{ formatDate(session.createdAt) }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div v-if="sessionsStore.error" class="mt-4 flex items-center gap-2 text-sm text-red-600">
@@ -135,13 +159,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '@/stores/sessions'
-import { useAuthStore } from '@/stores/auth'
 import SessionStatusBadge from '@/components/SessionStatusBadge.vue'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const authStore = useAuthStore()
 
 type Filter = 'all' | 'in-progress' | 'finalised'
 const activeFilter = ref<Filter>('all')

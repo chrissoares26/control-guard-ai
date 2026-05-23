@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-full bg-surface px-8 py-8">
-    <div class="max-w-2xl mx-auto">
+  <div class="min-h-full bg-surface px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="max-w-2xl w-full mx-auto">
 
       <!-- Breadcrumb -->
       <button
@@ -14,10 +14,10 @@
       </button>
 
       <!-- Page title -->
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight mb-7">New Review Session</h1>
+      <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-7">New Review Session</h1>
 
       <!-- Form card -->
-      <div class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card p-8">
+      <div class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card p-6 sm:p-8">
         <form @submit.prevent="handleSubmit" class="space-y-6">
 
           <!-- Session Name -->
@@ -31,7 +31,7 @@
               type="text"
               required
               placeholder="e.g. Q2 2026 AP Process Review"
-              class="block w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
+              class="block w-full px-3.5 py-2.5 min-h-[44px] text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
             />
           </div>
 
@@ -46,7 +46,7 @@
               type="text"
               required
               placeholder="e.g. Accounts Payable"
-              class="block w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
+              class="block w-full px-3.5 py-2.5 min-h-[44px] text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
             />
           </div>
 
@@ -61,7 +61,7 @@
               type="text"
               required
               placeholder="e.g. Jane Smith"
-              class="block w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
+              class="block w-full px-3.5 py-2.5 min-h-[44px] text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
             />
           </div>
 
@@ -79,7 +79,7 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-end gap-3 pt-2">
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 pt-2">
             <button
               type="button"
               @click="router.push('/sessions')"
@@ -90,7 +90,7 @@
             <button
               type="submit"
               :disabled="sessionsStore.loading"
-              class="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-dark text-white rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg v-if="sessionsStore.loading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.25"/>

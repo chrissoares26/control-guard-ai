@@ -28,3 +28,7 @@ coverage/
 # Prisma generated
 *.db
 *.db-journal
+
+# Playwright MCP artifacts
+.playwright-mcp/
+

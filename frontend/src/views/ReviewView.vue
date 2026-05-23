@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-surface">
-    <div class="max-w-3xl mx-auto px-6 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       <!-- Breadcrumb -->
       <div class="mb-6">
@@ -24,7 +24,7 @@
 
         <!-- Page heading -->
         <div class="flex items-center gap-3 mb-6">
-          <h1 class="text-2xl font-bold text-slate-900">Review Findings</h1>
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Review Findings</h1>
           <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 text-slate-500">
             {{ reviewedCount }} of {{ sessionsStore.findings.length }} reviewed
           </span>
@@ -71,7 +71,7 @@
         </div>
 
         <!-- Finding cards -->
-        <div class="space-y-4 mb-24">
+        <div class="space-y-4 mb-8">
           <FindingCard
             v-for="finding in sessionsStore.findings"
             :key="finding.id"
@@ -83,36 +83,34 @@
         </div>
 
         <!-- Finalise button — sticky bottom -->
-        <div class="fixed bottom-0 left-0 right-0 px-6 py-4 bg-surface/80 backdrop-blur border-t border-slate-200/60">
-          <div class="max-w-3xl mx-auto">
-            <button
-              :disabled="pendingCount > 0 || finalising"
-              @click="handleFinalise"
-              :title="pendingCount > 0 ? `${pendingCount} finding(s) still pending review` : ''"
-              class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg transition-colors"
-            >
-              <div v-if="finalising" class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              <template v-else-if="pendingCount > 0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-              </template>
-              <template v-else>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </template>
-              {{ finalising ? 'Finalising…' : pendingCount > 0 ? `Finalise Session (${pendingCount} pending)` : 'Finalise Session' }}
-            </button>
-          </div>
+        <div class="sticky bottom-0 pt-3 pb-6 bg-surface/90 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6">
+          <button
+            :disabled="pendingCount > 0 || finalising"
+            @click="handleFinalise"
+            :title="pendingCount > 0 ? `${pendingCount} finding(s) still pending review` : ''"
+            class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg transition-colors"
+          >
+            <div v-if="finalising" class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            <template v-else-if="pendingCount > 0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </template>
+            <template v-else>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </template>
+            {{ finalising ? 'Finalising…' : pendingCount > 0 ? `Finalise Session (${pendingCount} pending)` : 'Finalise Session' }}
+          </button>
         </div>
 
         <!-- Finalise confirm dialog -->
         <div v-if="showFinaliseConfirm" class="fixed inset-0 z-50 flex items-center justify-center">
           <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showFinaliseConfirm = false" />
-          <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-md mx-4 p-6">
+          <div class="relative bg-white rounded-2xl shadow-modal w-full max-w-sm mx-4 sm:max-w-md p-6">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

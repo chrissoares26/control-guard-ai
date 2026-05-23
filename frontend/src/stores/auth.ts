@@ -8,9 +8,15 @@ interface User {
   username: string
 }
 
+const TOKEN_KEY = 'cg_token'
+
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(null)
+  const token = ref<string | null>(localStorage.getItem(TOKEN_KEY))
   const user = ref<User | null>(null)
+
+  if (token.value) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
+  }
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
 
@@ -18,6 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
     const response = await api.post('/auth/login', { email, password })
     token.value = response.data.access_token
     user.value = response.data.user
+    localStorage.setItem(TOKEN_KEY, token.value!)
     api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
 
@@ -27,6 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       token.value = null
       user.value = null
+      localStorage.removeItem(TOKEN_KEY)
       delete api.defaults.headers.common['Authorization']
     }
   }
@@ -39,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       token.value = null
       user.value = null
+      localStorage.removeItem(TOKEN_KEY)
     }
   }
 

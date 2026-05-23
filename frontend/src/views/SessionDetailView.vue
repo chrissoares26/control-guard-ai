@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-surface px-8 py-8">
+  <div class="min-h-full bg-surface px-4 sm:px-6 py-6 sm:py-8">
     <div class="max-w-3xl mx-auto">
 
       <!-- Breadcrumb -->
@@ -23,7 +23,7 @@
         <!-- Page header: title + status badge -->
         <div class="mb-7">
           <div class="flex items-start gap-3 mb-2">
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight leading-tight">
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
               {{ sessionsStore.currentSession.name }}
             </h1>
             <SessionStatusBadge
@@ -44,7 +44,7 @@
         <!-- Finding summary stats (analysed+ sessions) -->
         <div
           v-if="sessionsStore.currentSession.findingSummary"
-          class="grid grid-cols-4 gap-3 mb-6"
+          class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6"
         >
           <div class="bg-white rounded-xl ring-1 ring-slate-200/60 shadow-card p-4 text-center">
             <p class="text-2xl font-bold text-slate-900 leading-none mb-1">
