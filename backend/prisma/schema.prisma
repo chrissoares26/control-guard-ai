@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum SessionStatus {
+  DRAFT
+  ANALYSED
+  IN_REVIEW
+  FINALISED
+}
+
+enum FindingCategory {
+  segregation_of_duties
+  missing_preventive_control
+  missing_detective_control
+  missing_corrective_control
+  excessive_access
+  documentation_gap
+  manual_process_risk
+  approval_chain_weakness
+}
+
+enum RiskLevel {
+  critical
+  high
+  medium
+  low
+}
+
+enum ConfidenceLabel {
+  high
+  medium
+  low
+  flagged
+}
+
+enum ReviewStatus {
+  pending
+  accepted
+  edited
+  dismissed
+}
+
+enum ReviewAction {
+  accepted
+  edited
+  dismissed
+}
+
+enum ControlTypeSuggested {
+  preventive
+  detective
+  corrective
+  multiple
+}
+
+enum EventType {
+  session_created
+  document_uploaded
+  ai_request_initiated
+  ai_response_received
+  finding_reviewed
+  session_finalised
+  report_exported
+  auth_event
+}
+
+enum Outcome {
+  success
+  failure
+  partial
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  username     String          @unique
+  passwordHash String
+  createdAt    DateTime        @default(now())
+
+  sessions     Session[]
+  auditLogs    AuditLogEntry[]
+}
+
+model Session {
+  id           String        @id @default(uuid())
+  name         String
+  processName  String
+  processOwner String
+  status       SessionStatus @default(DRAFT)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  finalisedAt  DateTime?
+
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+
+  document     Document?
+  findings     Finding[]
+  auditLogs    AuditLogEntry[]
+}
+
+model Document {
+  id                  String   @id @default(uuid())
+  filename            String
+  fileSize            Int
+  format              String
+  extractedText       String   @db.Text
+  sanitisedText       String   @db.Text
+  wordCount           Int
+  sanitisationApplied Boolean  @default(false)
+  uploadedAt          DateTime @default(now())
+
+  sessionId           String   @unique
+  session             Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Finding {
+  id                   String               @id @default(uuid())
+  sequence             Int
+  category             FindingCategory
+  title                String               @db.VarChar(80)
+  description          String               @db.Text
+  affectedProcessStep  String
+  riskLevel            RiskLevel
+  confidenceScore      Float
+  confidenceLabel      ConfidenceLabel
+  evidenceExcerpt      String               @db.VarChar(200)
+  recommendation       String               @db.Text
+  controlTypeSuggested ControlTypeSuggested
+  requiresHumanReview  Boolean
+  reviewStatus         ReviewStatus         @default(pending)
+  createdAt            DateTime             @default(now())
+
+  sessionId            String
+  session              Session              @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  reviewerDecision     ReviewerDecision?
+
+  @@unique([sessionId, sequence])
+}
+
+model ReviewerDecision {
+  id                     String       @id @default(uuid())
+  decidedBy              String
+  decidedAt              DateTime     @default(now())
+  action                 ReviewAction
+  originalRecommendation String       @db.Text
+  finalRecommendation    String       @db.Text
+  reviewerNote           String?      @db.Text
+
+  findingId              String       @unique
+  finding                Finding      @relation(fields: [findingId], references: [id], onDelete: Cascade)
+}
+
+model AuditLogEntry {
+  id             String    @id @default(uuid())
+  eventType      EventType
+  eventTimestamp DateTime  @default(now())
+  actor          String
+  payload        Json
+  outcome        Outcome
+  errorDetail    String?   @db.Text
+
+  sessionId      String?
+  session        Session?  @relation(fields: [sessionId], references: [id])
+
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+}
