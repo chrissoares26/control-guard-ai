@@ -116,11 +116,11 @@ export class AnalysisService {
       await this.auditLog.log({
         eventType: 'ai_response_received',
         actor: 'SYSTEM',
-        payload: { error: 'Schema validation failed', raw_response: rawResponse.slice(0, 500) },
+        payload: { error: 'Schema validation failed' },
         outcome: 'failure',
         sessionId,
         userId: user.id,
-        errorDetail: (error as Error).message,
+        errorDetail: 'Schema validation failed',
       });
       throw new InternalServerErrorException('AI analysis returned invalid data. Please try again.');
     }

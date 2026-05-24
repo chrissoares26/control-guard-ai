@@ -248,31 +248,51 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-50">
-                    <tr v-for="entry in auditEntries" :key="entry.id" class="hover:bg-slate-50/70 transition-colors">
-                      <td class="px-5 py-3 text-slate-400 whitespace-nowrap font-mono">
-                        {{ formatDateTime(entry.eventTimestamp) }}
-                      </td>
-                      <td class="px-5 py-3 text-slate-700 font-medium">
-                        {{ entry.eventType.replace(/_/g, ' ') }}
-                      </td>
-                      <td class="px-5 py-3 text-slate-600">{{ entry.actor }}</td>
-                      <td class="px-5 py-3">
-                        <span
-                          :class="entry.outcome === 'success'
-                            ? 'inline-flex items-center gap-1 text-emerald-700 font-medium'
-                            : 'inline-flex items-center gap-1 text-red-600 font-medium'"
-                        >
-                          <svg v-if="entry.outcome === 'success'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                          <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                          {{ entry.outcome }}
-                        </span>
-                      </td>
-                    </tr>
+                    <template v-for="entry in auditEntries" :key="entry.id">
+                      <tr
+                        class="hover:bg-slate-50/70 transition-colors cursor-pointer select-none"
+                        @click="toggleAuditDetail(entry.id)"
+                      >
+                        <td class="px-5 py-3 text-slate-400 whitespace-nowrap font-mono">
+                          {{ formatDateTime(entry.eventTimestamp) }}
+                        </td>
+                        <td class="px-5 py-3 text-slate-700 font-medium">
+                          {{ entry.eventType.replace(/_/g, ' ') }}
+                        </td>
+                        <td class="px-5 py-3 text-slate-600">{{ entry.actor }}</td>
+                        <td class="px-5 py-3">
+                          <span :class="getOutcomeClass(entry)">
+                            <svg v-if="!isNegativeOutcome(entry)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            {{ getOutcomeLabel(entry) }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr v-if="expandedAuditId === entry.id">
+                        <td colspan="4" class="px-5 py-4 bg-slate-50 border-b border-slate-100">
+                          <div v-if="entry.errorDetail || entry.payload?.error" class="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                            <span class="font-semibold">Error: </span>{{ (entry.payload?.error as string) || formatErrorDetail(entry.errorDetail!) }}
+                          </div>
+                          <p class="text-xs text-slate-700 mb-2 font-medium">{{ getEventSummary(entry) }}</p>
+                          <div v-if="hasPayload(entry)" class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs max-w-sm">
+                            <template v-for="(val, key) in (entry.payload as Record<string, unknown>)" :key="key">
+                              <template v-if="key !== 'raw_response' && key !== 'error'">
+                                <span class="text-slate-400 font-mono">{{ key }}</span>
+                                <span class="text-slate-700">{{ val }}</span>
+                              </template>
+                            </template>
+                          </div>
+                          <p v-else-if="!entry.errorDetail" class="text-xs text-slate-400 italic">
+                            No additional details recorded for this event.
+                          </p>
+                        </td>
+                      </tr>
+                    </template>
                   </tbody>
                 </table>
               </div>
@@ -315,7 +335,18 @@ const analysisError = ref('')
 const downloadingReport = ref(false)
 const showAuditTrail = ref(false)
 const loadingAudit = ref(false)
-const auditEntries = ref<Array<{ id: string; eventType: string; eventTimestamp: string; actor: string; outcome: string }>>([])
+type AuditEntry = {
+  id: string
+  eventType: string
+  eventTimestamp: string
+  actor: string
+  outcome: string
+  payload: Record<string, unknown>
+  errorDetail: string | null
+}
+
+const auditEntries = ref<AuditEntry[]>([])
+const expandedAuditId = ref<string | null>(null)
 
 const sessionId = route.params.id as string
 
@@ -393,6 +424,76 @@ async function handleDownloadReport() {
   } finally {
     downloadingReport.value = false
   }
+}
+
+function formatErrorDetail(detail: string): string {
+  try {
+    const parsed = JSON.parse(detail)
+    if (Array.isArray(parsed) && parsed[0]?.message) {
+      return parsed.map((e: { message: string }) => e.message).join(', ')
+    }
+  } catch {
+    // not JSON — return as-is
+  }
+  return detail
+}
+
+function toggleAuditDetail(id: string) {
+  expandedAuditId.value = expandedAuditId.value === id ? null : id
+}
+
+function getOutcomeLabel(entry: AuditEntry): string {
+  const p = entry.payload as Record<string, unknown> | null
+  if (entry.eventType === 'finding_reviewed') {
+    if (p?.action === 'accepted' || p?.action === 'edited') return 'Approved'
+    if (p?.action === 'dismissed') return 'Rejected'
+  }
+  if (entry.eventType === 'session_finalised') return 'Finalised'
+  if (entry.eventType === 'report_exported') return 'Exported'
+  if (entry.outcome === 'failure') return 'Failed'
+  return 'Success'
+}
+
+function isNegativeOutcome(entry: AuditEntry): boolean {
+  const label = getOutcomeLabel(entry)
+  return label === 'Failed' || label === 'Rejected'
+}
+
+function getOutcomeClass(entry: AuditEntry): string {
+  if (isNegativeOutcome(entry)) return 'inline-flex items-center gap-1 text-red-600 font-medium'
+  const label = getOutcomeLabel(entry)
+  if (label === 'Approved' || label === 'Success' || label === 'Finalised' || label === 'Exported') {
+    return 'inline-flex items-center gap-1 text-emerald-700 font-medium'
+  }
+  return 'inline-flex items-center gap-1 text-amber-600 font-medium'
+}
+
+function getEventSummary(entry: AuditEntry): string {
+  const p = entry.payload as Record<string, unknown> | null
+  switch (entry.eventType) {
+    case 'finding_reviewed':
+      return `Finding was ${getOutcomeLabel(entry).toLowerCase()} (action: ${p?.action ?? 'unknown'})`
+    case 'document_uploaded':
+      return `Document "${p?.filename ?? 'unknown'}" (${formatFileSize(Number(p?.filesize ?? 0))}) was uploaded`
+    case 'ai_request_initiated':
+      return `AI analysis started for document "${p?.document_name ?? 'unknown'}"`
+    case 'ai_response_received':
+      return entry.outcome === 'failure'
+        ? 'AI analysis failed'
+        : 'AI analysis completed successfully'
+    case 'report_exported':
+      return `Report exported by ${p?.exported_by ?? 'unknown'} as "${p?.report_filename ?? 'unknown'}"`
+    case 'session_finalised':
+      return 'Session was marked as finalised'
+    case 'session_created':
+      return 'Session was created'
+    default:
+      return entry.eventType.replace(/_/g, ' ')
+  }
+}
+
+function hasPayload(entry: AuditEntry): boolean {
+  return !!entry.payload && Object.keys(entry.payload).length > 0
 }
 
 function formatDate(iso: string) {
