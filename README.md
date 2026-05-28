@@ -18,6 +18,7 @@ An AI-assisted internal financial controls evaluation assistant. Upload a proces
 cd backend
 cp .env.example .env
 # Edit .env — set DATABASE_URL, JWT_SECRET, OPENAI_API_KEY at minimum
+npm install
 ```
 
 **Start PostgreSQL:**

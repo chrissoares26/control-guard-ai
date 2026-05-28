@@ -9,6 +9,27 @@
 
 ---
 
+## Example Prompts Used
+
+Below are representative prompts submitted to Claude Code during development.
+
+**Specification generation:**
+> "I have a Finance AI assessment brief (PDF attached). I want to build Option 2 — Internal Controls Evaluation Assistant. Create a full feature specification with user stories, functional requirements, success criteria, and edge cases. The application must include human-in-the-loop validation, an audit trail, and AI-powered control gap analysis."
+
+**Architecture design:**
+> "Design the NestJS backend architecture for ControlGuard AI. It needs: JWT authentication, document upload with text extraction (PDF and DOCX), OpenAI integration for control gap analysis, an append-only audit log, and PDF report export. Define the module structure, key design constraints, and data model. The audit log must be strictly immutable — no updates or deletes ever."
+
+**PII sanitisation module:**
+> "Implement a SanitisationService in NestJS that strips PII from extracted document text before it's sent to the OpenAI API. It must redact: email addresses, phone numbers (international and domestic), IBANs, and account numbers (8+ digit sequences). Return the sanitised text plus a summary of what was matched. Include a unit test file covering each pattern type."
+
+**Governance enforcement prompt:**
+> "In the AnalysisService, after receiving and validating the OpenAI response, persist each finding. Apply a confidence threshold check: if a finding's confidence_score is below the CONFIDENCE_THRESHOLD env var (default 0.75), set requiresHumanReview to true. This must be evaluated and stored at write time, not read time, so that changing the env var never retroactively alters existing findings."
+
+**Audit trail atomicity:**
+> "In the FindingsService review method, wrap the finding status update and the audit log entry in a single prisma.$transaction so both succeed or both roll back. The transaction must also transition the session from ANALYSED to IN_REVIEW if this is the first finding decision. The audit log entry must store the reviewer identity, the action taken, and whether the recommendation was edited."
+
+---
+
 ## Claude Code Usage
 
 Claude Code was used throughout the entire development lifecycle:
