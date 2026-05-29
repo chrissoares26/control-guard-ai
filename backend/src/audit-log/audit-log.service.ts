@@ -1,9 +1,6 @@
-// APPEND-ONLY BY DESIGN: This service intentionally exposes no update or delete
-// operations. The audit log is a tamper-evident record of all system events.
-// Adding update/delete methods here would break this guarantee.
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateAuditLogDto } from './dto/create-audit-log.dto';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateAuditLogDto } from "./dto/create-audit-log.dto";
 
 @Injectable()
 export class AuditLogService {
@@ -27,7 +24,7 @@ export class AuditLogService {
   async findBySession(sessionId: string) {
     return this.prisma.auditLogEntry.findMany({
       where: { sessionId },
-      orderBy: { eventTimestamp: 'asc' },
+      orderBy: { eventTimestamp: "asc" },
     });
   }
 }

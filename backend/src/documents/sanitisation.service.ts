@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 export interface SanitisationResult {
   sanitisedText: string;
@@ -29,24 +29,22 @@ export class SanitisationService {
 
     sanitisedText = sanitisedText.replace(this.patterns.email, () => {
       emails++;
-      return '[EMAIL]';
+      return "[EMAIL]";
     });
 
-    // IBAN and account before phone: phone regex matches digit runs, so
-    // replace structured numeric formats first to avoid false positives.
     sanitisedText = sanitisedText.replace(this.patterns.iban, () => {
       ibans++;
-      return '[IBAN]';
+      return "[IBAN]";
     });
 
     sanitisedText = sanitisedText.replace(this.patterns.account, () => {
       accounts++;
-      return '[ACCOUNT]';
+      return "[ACCOUNT]";
     });
 
     sanitisedText = sanitisedText.replace(this.patterns.phone, () => {
       phones++;
-      return '[PHONE]';
+      return "[PHONE]";
     });
 
     const sanitisationApplied = emails + phones + ibans + accounts > 0;

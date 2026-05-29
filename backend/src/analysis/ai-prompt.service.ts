@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { createHash } from 'crypto';
+import { Injectable } from "@nestjs/common";
+import { createHash } from "crypto";
 
-// System prompt version — increment when prompt logic changes
-const SYSTEM_PROMPT_VERSION = 'v1.0';
+const SYSTEM_PROMPT_VERSION = "v1.0";
 
 const SYSTEM_PROMPT_CONTENT = `You are an internal financial controls expert assisting finance audit professionals in evaluating process descriptions for control gaps.
 
@@ -82,7 +81,10 @@ export class AiPromptService {
     return { content: SYSTEM_PROMPT_CONTENT, version: SYSTEM_PROMPT_VERSION };
   }
 
-  buildUserPrompt(context: { processName: string; processOwner: string; sessionId: string }, sanitisedText: string): string {
+  buildUserPrompt(
+    context: { processName: string; processOwner: string; sessionId: string },
+    sanitisedText: string,
+  ): string {
     return `SESSION ID: ${context.sessionId}
 PROCESS NAME: ${context.processName}
 PROCESS OWNER: ${context.processOwner}
@@ -94,6 +96,6 @@ Analyse the above process description for internal control gaps. Return only the
   }
 
   hashPrompt(prompt: string): string {
-    return createHash('sha256').update(prompt).digest('hex').slice(0, 16);
+    return createHash("sha256").update(prompt).digest("hex").slice(0, 16);
   }
 }

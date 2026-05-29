@@ -6,14 +6,19 @@ import {
   ConflictException,
   UnprocessableEntityException,
   InternalServerErrorException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
-import { AuditLogService } from '../audit-log/audit-log.service';
-import { AiPromptService } from './ai-prompt.service';
-import { validateAiResponse } from './findings-schema';
-import OpenAI from 'openai';
-import { FindingCategory, RiskLevel, ConfidenceLabel, ControlTypeSuggested } from '@prisma/client';
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { AiPromptService } from "./ai-prompt.service";
+import { validateAiResponse } from "./findings-schema";
+import OpenAI from "openai";
+import {
+  FindingCategory,
+  RiskLevel,
+  ConfidenceLabel,
+  ControlTypeSuggested,
+} from "@prisma/client";
 
 interface AnalysisUser {
   id: string;
@@ -33,9 +38,12 @@ export class AnalysisService {
     private readonly aiPrompt: AiPromptService,
     private readonly config: ConfigService,
   ) {
-    this.openai = new OpenAI({ apiKey: this.config.get<string>('openai.apiKey') });
-    this.model = this.config.get<string>('openai.model') || 'gpt-4o';
-    this.confidenceThreshold = this.config.get<number>('confidenceThreshold') || 0.75;
+    this.openai = new OpenAI({
+      apiKey: this.config.get<string>("openai.apiKey"),
+    });
+    this.model = this.config.get<string>("openai.model") || "gpt-4o";
+    this.confidenceThreshold =
+      this.config.get<number>("confidenceThreshold") || 0.75;
   }
 
   async analyse(user: AnalysisUser, sessionId: string) {
@@ -43,29 +51,36 @@ export class AnalysisService {
       where: { id: sessionId },
       include: { document: true, findings: { select: { id: true } } },
     });
-    if (!session) throw new NotFoundException('Session not found');
-    if (session.userId !== user.id) throw new ForbiddenException('Access denied');
-    if (session.status === 'FINALISED') throw new UnprocessableEntityException('Session is finalised');
-    if (!session.document) throw new NotFoundException('No document uploaded for this session');
-    if (session.findings.length > 0) throw new ConflictException('Analysis already run for this session');
+    if (!session) throw new NotFoundException("Session not found");
+    if (session.userId !== user.id)
+      throw new ForbiddenException("Access denied");
+    if (session.status === "FINALISED")
+      throw new UnprocessableEntityException("Session is finalised");
+    if (!session.document)
+      throw new NotFoundException("No document uploaded for this session");
+    if (session.findings.length > 0)
+      throw new ConflictException("Analysis already run for this session");
 
     const systemPrompt = this.aiPrompt.getSystemPrompt();
     const userPrompt = this.aiPrompt.buildUserPrompt(
-      { processName: session.processName, processOwner: session.processOwner, sessionId },
+      {
+        processName: session.processName,
+        processOwner: session.processOwner,
+        sessionId,
+      },
       session.document.sanitisedText,
     );
     const promptHash = this.aiPrompt.hashPrompt(userPrompt);
 
-    // Audit: log BEFORE the AI call so trail is complete even if call fails
     await this.auditLog.log({
-      eventType: 'ai_request_initiated',
+      eventType: "ai_request_initiated",
       actor: user.username,
       payload: {
         system_prompt_version: systemPrompt.version,
         user_prompt_hash: promptHash,
         model: this.model,
       },
-      outcome: 'success',
+      outcome: "success",
       sessionId,
       userId: user.id,
     });
@@ -75,35 +90,39 @@ export class AnalysisService {
       const completion = await this.openai.chat.completions.create({
         model: this.model,
         messages: [
-          { role: 'system', content: systemPrompt.content },
-          { role: 'user', content: userPrompt },
+          { role: "system", content: systemPrompt.content },
+          { role: "user", content: userPrompt },
         ],
-        response_format: { type: 'json_object' },
+        response_format: { type: "json_object" },
         temperature: 0.2,
       });
-      rawResponse = completion.choices[0]?.message?.content || '';
+      rawResponse = completion.choices[0]?.message?.content || "";
     } catch (error) {
       await this.auditLog.log({
-        eventType: 'ai_response_received',
-        actor: 'SYSTEM',
-        payload: { error: 'OpenAI API call failed', message: (error as Error).message },
-        outcome: 'failure',
+        eventType: "ai_response_received",
+        actor: "SYSTEM",
+        payload: {
+          error: "OpenAI API call failed",
+          message: (error as Error).message,
+        },
+        outcome: "failure",
         sessionId,
         userId: user.id,
         errorDetail: (error as Error).message,
       });
-      throw new InternalServerErrorException('AI analysis failed. Please try again.');
+      throw new InternalServerErrorException(
+        "AI analysis failed. Please try again.",
+      );
     }
 
-    // Audit: store raw response BEFORE parsing
     await this.auditLog.log({
-      eventType: 'ai_response_received',
-      actor: 'SYSTEM',
+      eventType: "ai_response_received",
+      actor: "SYSTEM",
       payload: {
         raw_response_length: rawResponse.length,
         raw_response_preview: rawResponse.slice(0, 200),
       },
-      outcome: 'success',
+      outcome: "success",
       sessionId,
       userId: user.id,
     });
@@ -112,23 +131,27 @@ export class AnalysisService {
     try {
       parsed = validateAiResponse(JSON.parse(rawResponse));
     } catch (error) {
-      this.logger.error('AI response schema validation failed', { rawResponse, error });
+      this.logger.error("AI response schema validation failed", {
+        rawResponse,
+        error,
+      });
       await this.auditLog.log({
-        eventType: 'ai_response_received',
-        actor: 'SYSTEM',
-        payload: { error: 'Schema validation failed' },
-        outcome: 'failure',
+        eventType: "ai_response_received",
+        actor: "SYSTEM",
+        payload: { error: "Schema validation failed" },
+        outcome: "failure",
         sessionId,
         userId: user.id,
-        errorDetail: 'Schema validation failed',
+        errorDetail: "Schema validation failed",
       });
-      throw new InternalServerErrorException('AI analysis returned invalid data. Please try again.');
+      throw new InternalServerErrorException(
+        "AI analysis returned invalid data. Please try again.",
+      );
     }
 
-    // Persist findings and transition session status
     await this.prisma.$transaction(async (tx) => {
       for (const f of parsed.findings) {
-        if (!f.evidence_excerpt?.trim()) continue; // Skip invalid findings with no evidence
+        if (!f.evidence_excerpt?.trim()) continue;
         await tx.finding.create({
           data: {
             sessionId,
@@ -142,17 +165,21 @@ export class AnalysisService {
             confidenceLabel: f.confidence_label as ConfidenceLabel,
             evidenceExcerpt: f.evidence_excerpt,
             recommendation: f.recommendation,
-            controlTypeSuggested: f.control_type_suggested as ControlTypeSuggested,
+            controlTypeSuggested:
+              f.control_type_suggested as ControlTypeSuggested,
             requiresHumanReview: f.confidence_score < this.confidenceThreshold,
           },
         });
       }
       await tx.session.update({
         where: { id: sessionId },
-        data: { status: 'ANALYSED' },
+        data: { status: "ANALYSED" },
       });
     });
 
-    return { message: 'Analysis complete', findingCount: parsed.findings.length };
+    return {
+      message: "Analysis complete",
+      findingCount: parsed.findings.length,
+    };
   }
 }
