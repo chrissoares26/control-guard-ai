@@ -25,6 +25,11 @@ Thumbs.db
 # Claude Code / Spec Kit
 .claude/
 .specify/
+specs/
+
+# Private docs
+docs/ControlGuard_AI_PRD_Context.pdf
+docs/Finance_AI_Assessment_Candidate_Instructions.pdf
 
 # Test coverage
 coverage/
