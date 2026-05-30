@@ -64,6 +64,21 @@ npm run dev
 
 ---
 
+## Sample Documents
+
+The `docs/` folder contains sample process documents you can use to test the application:
+
+| File | Description |
+|------|-------------|
+| `Stake_Financial_Audit_Process.docx` | Sample financial audit process |
+| `Ward_Budget_Process.docx` | Sample ward budget process |
+| `Ward_Expenditure_Payments_Process.docx` | Sample expenditure and payments process |
+| `Ward_Sunday_Donations_Process.docx` | Sample donations process |
+
+Upload any of these when creating a new session to run a full analysis end-to-end.
+
+---
+
 ## Running Tests
 
 ```bash
