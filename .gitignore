@@ -22,6 +22,10 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Claude Code / Spec Kit
+.claude/
+.specify/
+
 # Test coverage
 coverage/
 
