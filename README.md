@@ -4,6 +4,12 @@ An AI-assisted internal financial controls evaluation assistant. Upload a proces
 
 ---
 
+## Try it live
+
+A hosted version is available at **[https://control-guard-ai.vercel.app](https://control-guard-ai.vercel.app)** — no setup required. Use the default credentials below and the sample documents in the `docs/` folder to run a full end-to-end analysis without cloning the repo or configuring any API keys.
+
+---
+
 ## Prerequisites
 
 - Node.js 20+
