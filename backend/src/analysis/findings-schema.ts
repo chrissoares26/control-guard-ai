@@ -18,16 +18,22 @@ const ConfidenceLabelEnum = z.enum(['high', 'medium', 'low', 'flagged']);
 const ControlTypeEnum = z.enum(['preventive', 'detective', 'corrective', 'multiple']);
 
 const FindingSchema = z.object({
-  finding_id: z.string().uuid(),
+  finding_id: z.string(),
   sequence: z.number().int().positive(),
   category: FindingCategoryEnum,
-  title: z.string().max(80),
+  title: z.string().min(1).transform(s => s.slice(0, 80)),
   description: z.string().min(1),
   affected_process_step: z.string().min(1),
   risk_level: RiskLevelEnum,
   confidence_score: z.number().min(0).max(1),
-  confidence_label: ConfidenceLabelEnum,
-  evidence_excerpt: z.string().min(1).max(200),
+  confidence_label: z.string().transform(s => {
+    const lower = s.toLowerCase();
+    if (lower.startsWith('high')) return 'high';
+    if (lower.startsWith('medium')) return 'medium';
+    if (lower.startsWith('low')) return 'low';
+    return 'flagged';
+  }).pipe(ConfidenceLabelEnum),
+  evidence_excerpt: z.string().min(1).transform(s => s.slice(0, 200)),
   recommendation: z.string().min(1),
   control_type_suggested: ControlTypeEnum,
 });
